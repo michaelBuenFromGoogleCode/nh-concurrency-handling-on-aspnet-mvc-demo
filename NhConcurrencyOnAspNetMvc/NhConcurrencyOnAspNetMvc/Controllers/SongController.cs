@@ -68,7 +68,8 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
                     if (dbValues.AlbumName != userValues.AlbumName)
                         ModelState.AddModelError("AlbumName", "Current value made by other user: " + dbValues.AlbumName);
 
-                    ModelState.AddModelError(string.Empty, "The record you attempted to edit was already modified by another user since you last loaded it. Open the latest changes on this record");
+                    ModelState.AddModelError(string.Empty, 
+                        "The record you attempted to edit was already modified by another user since you last loaded it. Open the latest changes on this record");
 
                 }
                 catch (Exception ex)
@@ -80,5 +81,39 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
                 return View("Input", song);
             }
         }
-    }
+
+
+        public ActionResult Delete(int id, byte[] Version)
+        {
+            using (var s = Mapper.GetSessionFactory().OpenSession())
+            using (var tx = s.BeginTransaction())
+            {
+                
+                if (Request.HttpMethod == "POST")
+                {
+                    var toDelete = new Song { SongId = id, Version = Version };
+                    try
+                    {                        
+                        s.Delete(toDelete);
+                        tx.Commit();
+                        
+                        return RedirectToAction("Index");
+                    }
+                    catch (StaleObjectStateException ex)
+                    {
+                        s.Evict(toDelete);
+                        var songToDelete = s.Get<Song>(id);                        
+                        ModelState.AddModelError(string.Empty, "The record you are attempting to delete was modified by other user first. Do you still want to delete this record?");
+                        return View(songToDelete);
+                    }
+                }
+                else
+                {
+                    var songToDelete = s.Get<Song>(id);
+                    return View(songToDelete);
+                }
+            }
+        }
+
+    }//class
 }
