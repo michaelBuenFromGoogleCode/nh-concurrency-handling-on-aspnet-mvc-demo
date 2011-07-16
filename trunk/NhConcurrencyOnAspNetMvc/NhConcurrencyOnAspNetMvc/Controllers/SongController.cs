@@ -59,7 +59,8 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
                     var userValues = song;
                    
                     
-                    if (dbValues == null) throw new Exception("This record you are attempting to save is already deleted by other user");
+                    if (dbValues == null) 
+                        throw new Exception("This record you are attempting to save is already deleted by other user");
                    
                     if (dbValues.SongName != userValues.SongName)
                         ModelState.AddModelError("SongName", "Current value made by other user: " + dbValues.SongName);
@@ -88,21 +89,26 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
             using (var s = Mapper.GetSessionFactory().OpenSession())
             using (var tx = s.BeginTransaction())
             {
+
                 
                 if (Request.HttpMethod == "POST")
                 {
-                    var toDelete = new Song { SongId = id, Version = Version };
+                    var versionedDelete = new Song { SongId = id, Version = Version };
                     try
-                    {                        
-                        s.Delete(toDelete);
+                    {
+                        s.Delete(versionedDelete);
                         tx.Commit();
-                        
+
                         return RedirectToAction("Index");
                     }
                     catch (StaleObjectStateException ex)
                     {
-                        s.Evict(toDelete);
-                        var songToDelete = s.Get<Song>(id);                        
+                        s.Evict(versionedDelete);
+
+                        var songToDelete = s.Get<Song>(id);
+                        if (songToDelete == null)
+                            return RedirectToAction("Index");
+
                         ModelState.AddModelError(string.Empty, "The record you are attempting to delete was modified by other user first. Do you still want to delete this record?");
                         return View(songToDelete);
                     }
@@ -112,6 +118,7 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
                     var songToDelete = s.Get<Song>(id);
                     return View(songToDelete);
                 }
+                
             }
         }
 
