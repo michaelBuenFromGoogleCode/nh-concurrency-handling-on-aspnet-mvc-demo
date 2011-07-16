@@ -1,0 +1,38 @@
+﻿@model IEnumerable<NhConcurrencyOnAspNetMvc.Models.Song>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Input")
+</p>
+<table>
+    <tr>
+        <th>
+            SongName
+        </th>
+        <th>
+            AlbumName
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.SongName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.AlbumName)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Input", new { id=item.SongId }) |            
+            @Html.ActionLink("Delete", "Delete", new { id=item.SongId })
+        </td>
+    </tr>
+}
+
+</table>
