@@ -52,7 +52,7 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
                     // ModelState.Remove("Version") 
 
                 }
-                catch(StaleObjectStateException ex)
+                catch(StaleObjectStateException)
                 {                       
                     s.Evict(song);
                     var dbValues = s.Get<Song>(song.SongId);
@@ -101,7 +101,7 @@ namespace NhConcurrencyOnAspNetMvc.Controllers
 
                         return RedirectToAction("Index");
                     }
-                    catch (StaleObjectStateException ex)
+                    catch (StaleObjectStateException)
                     {
                         s.Evict(versionedDelete);
 
