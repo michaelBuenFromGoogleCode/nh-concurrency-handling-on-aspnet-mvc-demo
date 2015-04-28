@@ -1,0 +1,1 @@
+Delete scenario is also considered
